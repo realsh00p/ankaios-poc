@@ -1,0 +1,72 @@
+# Ignore everything by default; explicitly unignore the small text/config
+# files and placeholders needed to reconstruct the layout.
+*
+
+# Repository metadata
+!.gitignore
+!README.md
+!AGENTS.md
+!**/.gitkeep
+
+# QEMU VM scripts and configuration. Disk images, boot binaries, keys,
+# downloads, and container storage remain ignored by default.
+!qemu_*/
+!qemu_*/alpine-podman-qemu.sh
+!qemu_*/echo-client/
+!qemu_*/echo-client/**
+!qemu_*/etc/
+!qemu_*/etc/**
+!qemu_*/boot/
+!qemu_*/boot/.gitkeep
+!qemu_*/var/
+!qemu_*/var/lib/
+!qemu_*/var/lib/containers/
+!qemu_*/var/lib/containers/.gitkeep
+!qemu_*/work/
+!qemu_*/work/.gitkeep
+
+# Host-side references for files that live under /etc.
+!host/
+!host/etc/
+!host/etc/**
+
+# Helper scripts.
+!scripts/
+!scripts/*.sh
+
+# Explicit binary/secret/runtime exclusions for clarity.
+*.img
+*.qcow2
+*.raw
+*.iso
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.gz
+*.xz
+*.zst
+*.deb
+*.apk
+*.rpm
+*.bin
+*.elf
+*.dtb
+*.dtbo
+*.ko
+Image-*
+vmlinuz-*
+initramfs-*
+*_ed25519
+*_ed25519.pub
+*.bak.*
+qemu_*/boot/**
+!qemu_*/boot/.gitkeep
+qemu_*/var/lib/containers/**
+!qemu_*/var/lib/containers/.gitkeep
+qemu_*/work/**
+!qemu_*/work/.gitkeep
+lost+found/
+recovery/
+.resized
+wifi_chip
