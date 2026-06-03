@@ -33,6 +33,8 @@ Current workload split:
 - `qemu_1`: `echo-server-40101`, `echo-server-40102`, `echo-server-40103`
 - `qemu_2`: `echo-client-40101`, `echo-client-40102`, `echo-client-40103`
 
+The echo clients use a startup readiness timeout to avoid boot-order false negatives. After the first successful GET, any later curl failure exits non-zero.
+
 ## Verification
 
 Use these checks after changes:

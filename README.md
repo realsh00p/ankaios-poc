@@ -46,6 +46,7 @@ Current desired state is stored in `/etc/ankaios/state.yaml` and tracked as `hos
 
 - `echo-server-40101`, `echo-server-40102`, `echo-server-40103` run on agent `qemu_1`.
 - `echo-client-40101`, `echo-client-40102`, `echo-client-40103` run on agent `qemu_2`.
+  Each client has a startup readiness window before strict failure detection starts.
 
 The echo clients call:
 

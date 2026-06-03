@@ -43,18 +43,18 @@ workloads:
     restartPolicy: NEVER
     runtimeConfig: |
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40101", "10"]
+      commandArgs: ["http://192.168.10.240:40101", "10", "180"]
   echo-client-40102:
     runtime: podman
     agent: qemu_2
     restartPolicy: NEVER
     runtimeConfig: |
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40102", "10"]
+      commandArgs: ["http://192.168.10.240:40102", "10", "180"]
   echo-client-40103:
     runtime: podman
     agent: qemu_2
     restartPolicy: NEVER
     runtimeConfig: |
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40103", "10"]
+      commandArgs: ["http://192.168.10.240:40103", "10", "180"]
