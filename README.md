@@ -10,6 +10,7 @@ Binary artifacts and runtime state are intentionally not tracked. VM disk images
 - `qemu_2/` - Alpine arm64 VM running Podman and the `qemu_2` Ankaios agent.
 - `qemu_2/echo-client/` - small Alpine/curl container source used by the `qemu_2` workloads.
 - `host/etc/` - regular-file snapshots of related host `/etc` files.
+- `host/systemd-unit-workload/` - container source for wrapping host systemd units as Ankaios workloads.
 - `scripts/sync-host-etc.sh` - refreshes `host/etc` from the real host `/etc` files.
 
 ## Services
@@ -22,6 +23,16 @@ The host systemd services are:
 - `qemu_2.service`
 
 The tracked host service/config snapshots live under `host/etc`.
+
+`qemu_1.service` and `qemu_2.service` are intended to be started by Ankaios workloads on the `linaro` agent:
+
+- `qemu_1-vm`
+- `qemu_2-vm`
+
+Those workloads use `localhost/systemd-unit-workload:latest`.
+The VM systemd units are disabled for direct boot startup; `ank-server.service` and `ank-agent.service` are enabled so Ankaios starts and owns the VM lifecycle.
+
+`ank-agent.service` runs `/usr/local/sbin/ankaios-clean-stale-linaro-containers` before startup. This removes non-running rootful Podman containers labelled `agent=linaro`, which avoids stale VM wrapper containers blocking Ankaios after a reboot.
 
 ## Ports
 
@@ -61,6 +72,13 @@ tar cf - Dockerfile echo-client.sh |
     'rm -rf /root/echo-client && mkdir -p /root/echo-client && cd /root/echo-client && tar xf -'
 ssh -i /userdata/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1 \
   'cd /root/echo-client && podman build -t localhost/echo-client:latest .'
+```
+
+Build the host systemd unit wrapper image:
+
+```sh
+cd /userdata/host/systemd-unit-workload
+sudo podman build -t localhost/systemd-unit-workload:latest .
 ```
 
 ## Git Notes

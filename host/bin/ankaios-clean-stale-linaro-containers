@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+if ! command -v podman >/dev/null 2>&1; then
+    exit 0
+fi
+
+podman ps -a --filter label=agent=linaro --format '{{.ID}} {{.Status}} {{.Names}}' |
+while IFS= read -r line; do
+    [ -n "$line" ] || continue
+
+    id="${line%% *}"
+    rest="${line#* }"
+
+    case "$rest" in
+        Up\ *) ;;
+        *)
+            echo "Removing stale linaro Ankaios container: $rest"
+            podman rm -f "$id" >/dev/null 2>&1 || true
+            ;;
+    esac
+done

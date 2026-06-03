@@ -16,6 +16,9 @@ This repository is rooted at `/userdata` on host `linaro`.
 - Both guests are Alpine arm64 VMs with Podman and Ankaios agents.
 - Both use host-backed `/var/lib/containers`, `/etc/containers`, and `/etc/ankaios`.
 - `/var/lib/containers` is mounted with virtiofs; `/etc/containers` and `/etc/ankaios` use 9p.
+- VM systemd services are represented as Ankaios workloads on the `linaro` agent via `localhost/systemd-unit-workload:latest`.
+- `qemu_1.service` and `qemu_2.service` should stay disabled for direct boot startup while Ankaios owns them.
+- `ank-agent.service` has an `ExecStartPre` cleanup for stale non-running rootful Podman containers labelled `agent=linaro`.
 
 ## Ankaios
 
@@ -26,6 +29,7 @@ This repository is rooted at `/userdata` on host `linaro`.
 
 Current workload split:
 
+- `linaro`: `qemu_1-vm`, `qemu_2-vm`
 - `qemu_1`: `echo-server-40101`, `echo-server-40102`, `echo-server-40103`
 - `qemu_2`: `echo-client-40101`, `echo-client-40102`, `echo-client-40103`
 

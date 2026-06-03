@@ -1,5 +1,21 @@
 apiVersion: v1
 workloads:
+  qemu_1-vm:
+    runtime: podman
+    agent: linaro
+    restartPolicy: ALWAYS
+    runtimeConfig: |
+      image: localhost/systemd-unit-workload:latest
+      commandOptions: ["--privileged", "--pid=host", "--network=host"]
+      commandArgs: ["qemu_1.service", "5"]
+  qemu_2-vm:
+    runtime: podman
+    agent: linaro
+    restartPolicy: ALWAYS
+    runtimeConfig: |
+      image: localhost/systemd-unit-workload:latest
+      commandOptions: ["--privileged", "--pid=host", "--network=host"]
+      commandArgs: ["qemu_2.service", "5"]
   echo-server-40101:
     runtime: podman
     agent: qemu_1
