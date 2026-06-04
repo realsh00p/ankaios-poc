@@ -29,8 +29,7 @@
 !host/
 !host/etc/
 !host/etc/**
-!host/systemd-unit-workload/
-!host/systemd-unit-workload/**
+host/etc/rollback-workload/history/
 !host/bin/
 !host/bin/**
 

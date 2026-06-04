@@ -5,7 +5,6 @@ Wants=network.target
 
 [Service]
 Environment="RUST_LOG=info"
-ExecStartPre=/usr/local/sbin/ankaios-clean-stale-linaro-containers
 ExecStart=/usr/local/bin/ank-agent
 
 [Install]
