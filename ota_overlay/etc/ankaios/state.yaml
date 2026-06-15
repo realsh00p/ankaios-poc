@@ -17,7 +17,7 @@ workloads:
     runtime: podman
     runtimeConfig: |-
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40102", "10", "180"]
+      commandArgs: ["http://192.168.10.240:40102", "10", "60"]
   echo-server-40103:
     agent: qemu_1
     dependencies:
@@ -40,7 +40,7 @@ workloads:
     runtime: podman
     runtimeConfig: |-
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40103", "10", "180"]
+      commandArgs: ["http://192.168.10.240:40103", "10", "60"]
   rollback:
     agent: linaro
     restartPolicy: NEVER
@@ -68,4 +68,4 @@ workloads:
     runtime: podman
     runtimeConfig: |-
       image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40101", "10", "180"]
+      commandArgs: ["http://192.168.10.240:40101", "10", "60"]

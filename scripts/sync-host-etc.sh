@@ -34,11 +34,15 @@ copy_file "$overlay_root/etc/systemd/system/ankaios-rollback-check.service" ota_
 copy_file "$overlay_root/etc/systemd/system/ankaios-rollback-check.timer" ota_overlay/etc/systemd/system/ankaios-rollback-check.timer
 copy_file "$overlay_root/etc/systemd/system/ota-overlay-systemd-loader.service" ota_overlay/etc/systemd/system/ota-overlay-systemd-loader.service
 
-copy_file "$overlay_root/etc/rollback-workload/apply-with-rollback.sh" ota_overlay/etc/rollback-workload/apply-with-rollback.sh 0755
+copy_file "$overlay_root/etc/rollback-workload/update" ota_overlay/etc/rollback-workload/update 0755
 copy_file "$overlay_root/etc/rollback-workload/previous-state.yaml" ota_overlay/etc/rollback-workload/previous-state.yaml
 copy_file "$overlay_root/usr/local/sbin/ankaios-rollback-check" ota_overlay/usr/local/sbin/ankaios-rollback-check 0755
 copy_file "$overlay_root/lib/systemd/system-generators/ota-overlay-systemd-generator" ota_overlay/lib/systemd/system-generators/ota-overlay-systemd-generator 0755
 
+old_update="apply-with-"
+old_update="${old_update}rollback.sh"
+rm -f "$repo_root/ota_overlay/etc/rollback-workload/$old_update"
+git rm --cached --ignore-unmatch "ota_overlay/etc/rollback-workload/$old_update" >/dev/null
 git rm -r --cached --ignore-unmatch host >/dev/null
 rm -rf "$repo_root/host"
 git add ota_overlay scripts/sync-host-etc.sh .gitignore

@@ -9,7 +9,7 @@ repo_startup_state="${REPO_STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/s
 ank="${ANK:-/usr/local/bin/ank}"
 
 usage() {
-    echo "usage: apply-with-rollback <incoming-state.yaml>" >&2
+    echo "usage: update <incoming-state.yaml>" >&2
 }
 
 if [ -z "$incoming_state" ]; then
@@ -67,6 +67,7 @@ fi
 cp -f "$tmp_previous" "$backup_dir/current-state-before-$timestamp.yaml"
 cp -f "$tmp_previous" "$previous_state.tmp"
 mv -f "$previous_state.tmp" "$previous_state"
+chmod 0644 "$previous_state"
 
 echo "Saved previous state to $previous_state"
 echo "Applying incoming state from $incoming_state"

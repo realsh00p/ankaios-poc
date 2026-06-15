@@ -3,6 +3,7 @@ set -eu
 
 state_file="${1:-/home/linaro/ota_overlay/etc/rollback-workload/previous-state.yaml}"
 ank="${ANK:-/usr/local/bin/ank}"
+startup_state="${STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/state.yaml}"
 
 failed_workloads() {
     "$ank" -k get state workloadStates -o json \
@@ -37,4 +38,7 @@ fi
 echo "Detected failed workload state:"
 echo "$failed"
 echo "Applying rollback state from $state_file"
+cp -f "$state_file" "$startup_state.tmp"
+mv -f "$startup_state.tmp" "$startup_state"
+echo "Persisted rollback state to $startup_state"
 "$ank" -k --no-wait apply "$state_file"
