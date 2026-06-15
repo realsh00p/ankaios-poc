@@ -1,0 +1,40 @@
+#!/bin/sh
+set -eu
+
+state_file="${1:-/home/linaro/ota_overlay/etc/rollback-workload/previous-state.yaml}"
+ank="${ANK:-/usr/local/bin/ank}"
+
+failed_workloads() {
+    "$ank" -k get state workloadStates -o json \
+        | jq -r '
+            .workloadStates
+            | to_entries[]
+            | .key as $agent
+            | .value
+            | to_entries[]
+            | select(.key != "rollback")
+            | .key as $workload
+            | .value
+            | to_entries[]
+            | select(
+                .value.state == "Failed"
+                or (.value.state == "Pending" and .value.subState == "StartingFailed")
+              )
+            | "\($agent)/\($workload): \(.value.state)(\(.value.subState)) \(.value.additionalInfo)"
+        '
+}
+
+if [ ! -r "$state_file" ]; then
+    echo "rollback state file is not readable: $state_file" >&2
+    exit 2
+fi
+
+failed="$(failed_workloads)"
+if [ -z "$failed" ]; then
+    exit 0
+fi
+
+echo "Detected failed workload state:"
+echo "$failed"
+echo "Applying rollback state from $state_file"
+"$ank" -k --no-wait apply "$state_file"

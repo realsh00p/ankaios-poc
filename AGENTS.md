@@ -1,6 +1,6 @@
 # Agent Notes
 
-This repository is rooted at `/userdata` on host `linaro`.
+This repository is rooted at `/home/linaro/ankaios_research` on host `linaro`.
 
 ## Rules
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=Ankaios agent
+After=network.target ank-server.service
+Wants=network.target
+
+[Service]
+Environment="RUST_LOG=info"
+ExecStart=/usr/local/bin/ank-agent --agent-config /home/linaro/ota_overlay/etc/ankaios/ank-agent.conf
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

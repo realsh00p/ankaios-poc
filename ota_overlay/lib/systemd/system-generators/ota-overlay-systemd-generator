@@ -1,0 +1,42 @@
+#!/bin/sh
+set -eu
+
+normal_dir="${1:-}"
+overlay_dir="/home/linaro/ota_overlay/etc/systemd/system"
+
+[ -n "$normal_dir" ] || exit 0
+[ -d "$overlay_dir" ] || exit 0
+
+link_unit() {
+    unit="$1"
+    src="$overlay_dir/$unit"
+    dst="$normal_dir/$unit"
+
+    [ -f "$src" ] || return 0
+    mkdir -p "$(dirname "$dst")"
+    ln -sf "$src" "$dst"
+}
+
+link_wanted_unit() {
+    target="$1"
+    unit="$2"
+
+    [ -f "$overlay_dir/$unit" ] || return 0
+    mkdir -p "$normal_dir/$target.wants"
+    ln -sf "../$unit" "$normal_dir/$target.wants/$unit"
+}
+
+for unit in \
+    ank-agent.service \
+    ank-server.service \
+    qemu_1.service \
+    qemu_2.service \
+    ankaios-rollback.service \
+    ankaios-rollback-check.service \
+    ankaios-rollback-check.timer
+do
+    link_unit "$unit"
+done
+
+link_wanted_unit multi-user.target ank-server.service
+link_wanted_unit multi-user.target ank-agent.service

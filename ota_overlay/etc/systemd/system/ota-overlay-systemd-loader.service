@@ -1,0 +1,15 @@
+[Unit]
+Description=Load OTA overlay systemd units
+Wants=home.mount
+After=local-fs.target home.mount
+Before=multi-user.target
+ConditionPathIsDirectory=/home/linaro/ota_overlay/etc/systemd/system
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/systemctl daemon-reload
+ExecStart=/bin/systemctl --no-block start ank-server.service ank-agent.service
+
+[Install]
+WantedBy=multi-user.target

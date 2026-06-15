@@ -25,13 +25,19 @@
 !qemu_*/work/
 !qemu_*/work/.gitkeep
 
-# Host-side references for files that live under /etc.
-!host/
-!host/etc/
-!host/etc/**
-host/etc/rollback-workload/history/
-!host/bin/
-!host/bin/**
+# OTA overlay files mirrored from /home/linaro/ota_overlay.
+!ota_overlay/
+!ota_overlay/etc/
+!ota_overlay/etc/**
+ota_overlay/etc/rollback-workload/history/
+!ota_overlay/usr/
+!ota_overlay/usr/local/
+!ota_overlay/usr/local/sbin/
+!ota_overlay/usr/local/sbin/**
+!ota_overlay/lib/
+!ota_overlay/lib/systemd/
+!ota_overlay/lib/systemd/system-generators/
+!ota_overlay/lib/systemd/system-generators/**
 
 # Helper scripts.
 !scripts/

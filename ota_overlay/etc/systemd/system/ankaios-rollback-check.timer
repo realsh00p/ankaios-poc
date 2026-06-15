@@ -1,0 +1,8 @@
+[Unit]
+Description=Run Ankaios rollback check periodically
+
+[Timer]
+OnActiveSec=30s
+OnUnitActiveSec=5s
+AccuracySec=1s
+Unit=ankaios-rollback-check.service

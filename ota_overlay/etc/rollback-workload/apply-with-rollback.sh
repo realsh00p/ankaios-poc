@@ -2,10 +2,10 @@
 set -eu
 
 incoming_state="${1:-}"
-previous_state="${PREVIOUS_STATE:-/userdata/host/etc/rollback-workload/previous-state.yaml}"
-backup_dir="${ROLLBACK_BACKUP_DIR:-/userdata/host/etc/rollback-workload/history}"
-startup_state="${STARTUP_STATE:-/etc/ankaios/state.yaml}"
-repo_startup_state="${REPO_STARTUP_STATE:-/userdata/host/etc/ankaios/state.yaml}"
+previous_state="${PREVIOUS_STATE:-/home/linaro/ota_overlay/etc/rollback-workload/previous-state.yaml}"
+backup_dir="${ROLLBACK_BACKUP_DIR:-/home/linaro/ota_overlay/etc/rollback-workload/history}"
+startup_state="${STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/state.yaml}"
+repo_startup_state="${REPO_STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/state.yaml}"
 ank="${ANK:-/usr/local/bin/ank}"
 
 usage() {

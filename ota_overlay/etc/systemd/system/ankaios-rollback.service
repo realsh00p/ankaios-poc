@@ -1,0 +1,10 @@
+[Unit]
+Description=Ankaios rollback monitor
+After=ank-server.service
+Wants=ank-server.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/systemctl start ankaios-rollback-check.timer
+ExecStop=/bin/systemctl stop ankaios-rollback-check.timer

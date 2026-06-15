@@ -1,0 +1,8 @@
+[Unit]
+Description=Ankaios rollback failure check
+After=ank-server.service
+Wants=ank-server.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/linaro/ota_overlay/usr/local/sbin/ankaios-rollback-check /home/linaro/ota_overlay/etc/rollback-workload/previous-state.yaml

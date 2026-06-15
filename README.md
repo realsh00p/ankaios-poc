@@ -1,6 +1,6 @@
 # userdata QEMU and Ankaios Lab
 
-This repository tracks the text configuration for the `linaro` host QEMU/Ankaios setup under `/userdata`.
+This repository tracks the text configuration for the `linaro` host QEMU/Ankaios setup under `/home/linaro/ankaios_research`.
 
 Binary artifacts and runtime state are intentionally not tracked. VM disk images, kernels, initramfs files, SSH keys, Podman storage, downloads, and recovery data are ignored by `.gitignore`.
 
@@ -57,18 +57,18 @@ The echo clients call:
 systemctl status qemu_1.service qemu_2.service
 ank -k get agents
 ank -k get workloads
-ssh -i /userdata/qemu_1/alpine-podman_ed25519 -p 2201 root@127.0.0.1
-ssh -i /userdata/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1
+ssh -i /home/linaro/ankaios_research/qemu_1/alpine-podman_ed25519 -p 2201 root@127.0.0.1
+ssh -i /home/linaro/ankaios_research/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1
 ```
 
 Build the `qemu_2` echo client image inside the VM:
 
 ```sh
-cd /userdata/qemu_2/echo-client
+cd /home/linaro/ankaios_research/qemu_2/echo-client
 tar cf - Dockerfile echo-client.sh |
-  ssh -i /userdata/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1 \
+  ssh -i /home/linaro/ankaios_research/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1 \
     'rm -rf /root/echo-client && mkdir -p /root/echo-client && cd /root/echo-client && tar xf -'
-ssh -i /userdata/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1 \
+ssh -i /home/linaro/ankaios_research/qemu_2/alpine-podman_ed25519 -p 2202 root@127.0.0.1 \
   'cd /root/echo-client && podman build -t localhost/echo-client:latest .'
 ```
 
@@ -79,6 +79,6 @@ Before committing, the pre-commit hook runs `scripts/sync-host-etc.sh` so host `
 Run the sync manually with:
 
 ```sh
-cd /userdata
+cd /home/linaro/ankaios_research
 scripts/sync-host-etc.sh
 ```
