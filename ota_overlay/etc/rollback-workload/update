@@ -7,6 +7,7 @@ backup_dir="${ROLLBACK_BACKUP_DIR:-/home/linaro/ota_overlay/etc/rollback-workloa
 startup_state="${STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/state.yaml}"
 repo_startup_state="${REPO_STARTUP_STATE:-/home/linaro/ota_overlay/etc/ankaios/state.yaml}"
 ank="${ANK:-/usr/local/bin/ank}"
+settle_seconds="${UPDATE_SETTLE_SECONDS:-75}"
 
 usage() {
     echo "usage: update <incoming-state.yaml>" >&2
@@ -30,6 +31,36 @@ fi
 if [ ! -x "$ank" ]; then
     echo "ank CLI is not executable: $ank" >&2
     exit 2
+fi
+
+current_failed_workloads() {
+    "$ank" -k get state workloadStates -o json \
+        | jq -r '
+            .workloadStates
+            | to_entries[]
+            | .key as $agent
+            | .value
+            | to_entries[]
+            | select(.key != "rollback")
+            | .key as $workload
+            | .value
+            | to_entries[]
+            | select(
+                .value.state == "Failed"
+                or (.value.state == "Pending" and .value.subState == "StartingFailed")
+              )
+            | "\($agent)/\($workload): \(.value.state)(\(.value.subState)) \(.value.additionalInfo)"
+        '
+}
+
+if [ "${UPDATE_ALLOW_FAILED_CURRENT:-0}" != "1" ]; then
+    failed="$(current_failed_workloads)"
+    if [ -n "$failed" ]; then
+        echo "refusing to update while current workload state has failures; rollback point was not changed" >&2
+        echo "$failed" >&2
+        echo "restore the system first, or set UPDATE_ALLOW_FAILED_CURRENT=1 to override" >&2
+        exit 1
+    fi
 fi
 
 mkdir -p "$backup_dir" "$(dirname "$previous_state")"
@@ -72,6 +103,21 @@ chmod 0644 "$previous_state"
 echo "Saved previous state to $previous_state"
 echo "Applying incoming state from $incoming_state"
 "$ank" -k apply "$incoming_state"
+
+if [ "$settle_seconds" -gt 0 ]; then
+    echo "Waiting ${settle_seconds}s for post-update validation"
+    sleep "$settle_seconds"
+fi
+
+failed="$(current_failed_workloads)"
+if [ -n "$failed" ]; then
+    echo "detected failed workload after update; rolling back to $previous_state" >&2
+    echo "$failed" >&2
+    cp -f "$previous_state" "$startup_state.tmp"
+    mv -f "$startup_state.tmp" "$startup_state"
+    "$ank" -k --no-wait apply "$previous_state"
+    exit 1
+fi
 
 cp -f "$incoming_state" "$startup_state.tmp"
 mv -f "$startup_state.tmp" "$startup_state"
