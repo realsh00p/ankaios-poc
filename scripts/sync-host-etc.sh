@@ -25,6 +25,8 @@ copy_file "$overlay_root/etc/ankaios/ank-agent.conf" ota_overlay/etc/ankaios/ank
 copy_file "$overlay_root/etc/ankaios/ank-server.conf" ota_overlay/etc/ankaios/ank-server.conf
 copy_file "$overlay_root/etc/ankaios/state.yaml" ota_overlay/etc/ankaios/state.yaml
 
+copy_file "/etc/symphony-api.json" ota_overlay/etc/symphony-api.json
+
 copy_file "$overlay_root/etc/systemd/system/ank-agent.service" ota_overlay/etc/systemd/system/ank-agent.service
 copy_file "$overlay_root/etc/systemd/system/ank-server.service" ota_overlay/etc/systemd/system/ank-server.service
 copy_file "$overlay_root/etc/systemd/system/qemu_1.service" ota_overlay/etc/systemd/system/qemu_1.service

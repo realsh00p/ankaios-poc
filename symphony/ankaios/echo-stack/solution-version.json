@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-v-v1",
+    "namespace": "default",
+    "labels": {
+      "displayName": "Ankaios Echo Stack",
+      "rootResource": "ankaios-echo-stack"
+    }
+  },
+  "spec": {
+    "rootResource": "ankaios-echo-stack",
+    "components": [
+      {
+        "name": "qemu_1-vm",
+        "type": "systemd",
+        "properties": {
+          "ankaios.agent": "linaro",
+          "ankaios.runtime": "systemd",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.runtimeConfig": "serviceName: qemu_1.service"
+        }
+      },
+      {
+        "name": "qemu_2-vm",
+        "type": "systemd",
+        "properties": {
+          "ankaios.agent": "linaro",
+          "ankaios.runtime": "systemd",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.runtimeConfig": "serviceName: qemu_2.service"
+        }
+      },
+      {
+        "name": "echo-server-40101",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40101\"]"
+        }
+      },
+      {
+        "name": "echo-server-40102",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40102\"]"
+        }
+      },
+      {
+        "name": "echo-server-40103",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40103\"]"
+        }
+      },
+      {
+        "name": "echo-client-40101",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:latest",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40101\", \"10\", \"60\"]"
+        }
+      },
+      {
+        "name": "echo-client-40102",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:latest",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40102\", \"10\", \"60\"]"
+        }
+      },
+      {
+        "name": "echo-client-40103",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:latest",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40103\", \"10\", \"60\"]"
+        }
+      }
+    ],
+    "displayName": "Ankaios Echo Stack v1"
+  }
+}

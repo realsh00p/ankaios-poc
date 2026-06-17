@@ -70,3 +70,26 @@ workloads:
       image: localhost/echo-client:latest
       commandArgs: ["http://192.168.10.240:40101", "10", "60"]
 
+  symphony-api:
+    agent: linaro
+    restartPolicy: ALWAYS
+    runtime: podman
+    runtimeConfig: |-
+      image: localhost/symphony-api:latest
+      commandOptions: ["--network", "host"]
+    controlInterfaceAccess:
+      allowRules:
+        - type: StateRule
+          operation: ReadWrite
+          filterMasks:
+            - "desiredState"
+            - "workloadStates"
+            - "agents"
+
+  symphony-opera:
+    agent: linaro
+    restartPolicy: ALWAYS
+    runtime: podman
+    runtimeConfig: |-
+      image: localhost/symphony-opera:solutions-fix
+      commandOptions: ["--network", "host", "-e", "HOSTNAME=0.0.0.0"]

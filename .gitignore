@@ -39,6 +39,43 @@ ota_overlay/etc/rollback-workload/history/
 !ota_overlay/lib/systemd/system-generators/
 !ota_overlay/lib/systemd/system-generators/**
 
+
+# Symphony API/Opera playground configuration and source.
+!symphony/
+
+!symphony/api-image/
+!symphony/api-image/Dockerfile
+!symphony/api-image/rootfs/
+!symphony/api-image/rootfs/etc/
+!symphony/api-image/rootfs/etc/symphony-api.json
+symphony/api-image/rootfs/lib/
+symphony/api-image/rootfs/usr/
+symphony/api-image/rootfs/bin/
+symphony/api-image/rootfs/sbin/
+!symphony/ankaios/
+!symphony/ankaios/**
+!symphony/opera/
+!symphony/opera/**
+symphony/opera/node_modules/
+symphony/opera/.next/
+symphony/opera/public/*.png
+symphony/opera/public/*.jpg
+symphony/opera/public/*.jpeg
+symphony/opera/public/*.ico
+symphony/opera/public/*.gif
+symphony/opera/public/*.webp
+
+# Binary frontend assets are intentionally not committed.
+symphony/opera/**/*.ico
+symphony/opera/**/*.png
+symphony/opera/**/*.jpg
+symphony/opera/**/*.jpeg
+symphony/opera/**/*.gif
+symphony/opera/**/*.webp
+
+# Symphony API config mirrored from /etc into ota_overlay.
+!ota_overlay/etc/symphony-api.json
+
 # Helper scripts.
 !scripts/
 !scripts/*.sh

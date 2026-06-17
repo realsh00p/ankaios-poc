@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-instance",
+    "namespace": "default",
+    "labels": {
+      "displayName": "Ankaios Echo Stack",
+      "solutionversion": "ankaios-echo-stack:v1",
+      "target": "linaro-ankaios"
+    }
+  },
+  "spec": {
+    "scope": "default",
+    "solutionversion": "ankaios-echo-stack:v1",
+    "target": {
+      "name": "linaro-ankaios"
+    },
+    "displayName": "Ankaios Echo Stack Instance"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "name": "linaro-ankaios",
+    "namespace": "default"
+  },
+  "spec": {
+    "forceRedeploy": false,
+    "topologies": [
+      {
+        "bindings": [
+          {
+            "role": "instance",
+            "provider": "providers.target.rust",
+            "config": {
+              "libHash": "any",
+              "libFile": "/usr/local/lib/libankaios.so"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
