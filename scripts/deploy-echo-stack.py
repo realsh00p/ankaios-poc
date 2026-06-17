@@ -89,6 +89,13 @@ def deployment_spec(solution_version, instance, target):
     }
 
 
+def seed_stack_resources(api):
+    target = load_json(TARGET_FILE)
+    post_resource(api, f"targets/registry/{target['metadata']['name']}", target)
+    for variant in VARIANTS.values():
+        post_resource(api, f"solutionversions/{variant['solution_version_id']}", load_json(variant["solution_version"]))
+
+
 def seed_validation_campaign(api):
     post_resource(api, "campaigns/ankaios-echo-stack-validation", load_json(CAMPAIGN_DIR / "campaign.json"))
     post_resource(api, "campaignversions/ankaios-echo-stack-validation-v-v1", load_json(CAMPAIGN_DIR / "campaign-version.json"))
@@ -172,7 +179,7 @@ def ensure_client_health_fails():
 
 
 def start_validation_activation(api):
-    activation = f"echo-stack-bad-port-{time.strftime('%Y%m%d%H%M%S')}"
+    activation = f"echo-stack-update-{time.strftime('%Y%m%d%H%M%S')}"
     payload = {
         "metadata": {"name": activation, "namespace": "default"},
         "spec": {"campaignversion": "ankaios-echo-stack-validation:v1"},
@@ -224,14 +231,11 @@ def wait_for_recovered_client(api, timeout=90):
     raise SystemExit(f"Rollback failed: echo-client-40102 health is still failing: {json.dumps(last_payload, sort_keys=True)}")
 
 
-def run_bad_client_rollback_test(api):
+def run_bad_client_update(api):
     print(f"Seeding Symphony resources into {api}")
+    seed_stack_resources(api)
     seed_validation_campaign(api)
-    print("Deploying bad echo stack: echo-client-40102 -> http://192.168.10.240:40999")
-    reconcile(api, "bad-client", output=False)
-    print("Waiting for echo-client-40102 container health to report unhealthy")
-    wait_for_unhealthy_client()
-    ensure_client_health_fails()
+    print("Starting Symphony update campaign: candidate echo-client-40102 -> http://192.168.10.240:40999")
     activation = start_validation_activation(api)
     wait_for_activation_done(api, activation)
     wait_for_recovered_client(api)
@@ -239,12 +243,12 @@ def run_bad_client_rollback_test(api):
 
 def main():
     parser = argparse.ArgumentParser(description="Deploy and validate the Symphony Ankaios echo stack")
-    parser.add_argument("variant", choices=["good", "bad-client", "bad-client-with-rollback-test"])
+    parser.add_argument("variant", choices=["good", "bad-client"])
     parser.add_argument("--api", default=os.environ.get("SYMPHONY_API", DEFAULT_API))
     args = parser.parse_args()
 
-    if args.variant == "bad-client-with-rollback-test":
-        run_bad_client_rollback_test(args.api)
+    if args.variant == "bad-client":
+        run_bad_client_update(args.api)
     else:
         reconcile(args.api, args.variant)
 
