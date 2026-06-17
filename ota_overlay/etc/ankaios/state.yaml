@@ -14,11 +14,6 @@ workloads:
     runtimeConfig: |-
       image: docker.io/ealen/echo-server:latest
       commandOptions: ["--network", "host", "-e", "PORT=40102"]
-  rollback:
-    agent: linaro
-    restartPolicy: NEVER
-    runtime: systemd
-    runtimeConfig: 'serviceName: ankaios-rollback.service'
   qemu_1-vm:
     agent: linaro
     restartPolicy: ALWAYS
