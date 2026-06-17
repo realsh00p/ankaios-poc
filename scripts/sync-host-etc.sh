@@ -35,10 +35,12 @@ copy_file "$overlay_root/etc/systemd/system/ankaios-rollback.service" ota_overla
 copy_file "$overlay_root/etc/systemd/system/ankaios-rollback-check.service" ota_overlay/etc/systemd/system/ankaios-rollback-check.service
 copy_file "$overlay_root/etc/systemd/system/ankaios-rollback-check.timer" ota_overlay/etc/systemd/system/ankaios-rollback-check.timer
 copy_file "$overlay_root/etc/systemd/system/ota-overlay-systemd-loader.service" ota_overlay/etc/systemd/system/ota-overlay-systemd-loader.service
+copy_file "$overlay_root/etc/systemd/system/ankaios-workload-health.service" ota_overlay/etc/systemd/system/ankaios-workload-health.service
 
 copy_file "$overlay_root/etc/rollback-workload/update" ota_overlay/etc/rollback-workload/update 0755
 copy_file "$overlay_root/etc/rollback-workload/previous-state.yaml" ota_overlay/etc/rollback-workload/previous-state.yaml
 copy_file "$overlay_root/usr/local/sbin/ankaios-rollback-check" ota_overlay/usr/local/sbin/ankaios-rollback-check 0755
+copy_file "$overlay_root/usr/local/sbin/ankaios-workload-health" ota_overlay/usr/local/sbin/ankaios-workload-health 0755
 copy_file "$overlay_root/lib/systemd/system-generators/ota-overlay-systemd-generator" ota_overlay/lib/systemd/system-generators/ota-overlay-systemd-generator 0755
 
 old_update="apply-with-"

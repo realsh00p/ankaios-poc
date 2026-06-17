@@ -54,6 +54,8 @@ symphony/api-image/rootfs/bin/
 symphony/api-image/rootfs/sbin/
 !symphony/ankaios/
 !symphony/ankaios/**
+!symphony/campaigns/
+!symphony/campaigns/**
 !symphony/opera/
 !symphony/opera/**
 symphony/opera/node_modules/

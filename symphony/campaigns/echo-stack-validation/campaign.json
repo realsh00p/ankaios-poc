@@ -1,0 +1,7 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-validation",
+    "namespace": "default"
+  },
+  "spec": {}
+}

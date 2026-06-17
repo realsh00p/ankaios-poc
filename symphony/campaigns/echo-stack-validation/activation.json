@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-validation-activation",
+    "namespace": "default"
+  },
+  "spec": {
+    "campaignversion": "ankaios-echo-stack-validation:v1"
+  }
+}

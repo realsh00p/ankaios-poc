@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-validation-v-v1",
+    "namespace": "default"
+  },
+  "spec": {
+    "rootResource": "ankaios-echo-stack-validation",
+    "firstStage": "validate-workloads",
+    "selfDriving": true,
+    "stages": {
+      "validate-workloads": {
+        "name": "validate-workloads",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8090/health/workloads",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "workloads": [
+            "qemu_1-vm",
+            "qemu_2-vm",
+            "echo-server-40101",
+            "echo-server-40102",
+            "echo-server-40103",
+            "echo-client-40101",
+            "echo-client-40102",
+            "echo-client-40103"
+          ]
+        },
+        "stageSelector": "${{$if($equal($output(validate-workloads,status),200),finalize,rollback)}}"
+      },
+      "finalize": {
+        "name": "finalize",
+        "provider": "providers.stage.mock",
+        "inputs": {
+          "result": "healthy"
+        },
+        "stageSelector": ""
+      },
+      "rollback": {
+        "name": "rollback",
+        "provider": "providers.stage.patch",
+        "config": {
+          "baseUrl": "http://127.0.0.1:8082/v1alpha2/",
+          "user": "admin",
+          "password": ""
+        },
+        "inputs": {
+          "objectType": "instance",
+          "objectName": "ankaios-echo-stack-instance",
+          "patchSource": "inline",
+          "patchAction": "add",
+          "patchContent": {
+            "metadata": {
+              "name": "ankaios-echo-stack-instance",
+              "namespace": "default",
+              "labels": {
+                "displayName": "Ankaios Echo Stack",
+                "solutionversion": "ankaios-echo-stack:v1",
+                "target": "linaro-ankaios"
+              }
+            },
+            "spec": {
+              "scope": "default",
+              "solutionversion": "ankaios-echo-stack:v1",
+              "target": {
+                "name": "linaro-ankaios"
+              },
+              "displayName": "Ankaios Echo Stack Instance"
+            }
+          }
+        },
+        "stageSelector": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Ankaios workload health HTTP endpoint
+After=ank-server.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/linaro/ota_overlay/usr/local/sbin/ankaios-workload-health
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

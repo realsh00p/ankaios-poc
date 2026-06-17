@@ -17,7 +17,9 @@
           "ankaios.agent": "linaro",
           "ankaios.runtime": "systemd",
           "ankaios.restartPolicy": "ALWAYS",
-          "ankaios.runtimeConfig": "serviceName: qemu_1.service"
+          "ankaios.runtimeConfig": "serviceName: qemu_1.service",
+          "health.url": "http://192.168.10.240:8090/health/workload/qemu_1-vm",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/qemu_1-vm"
         }
       },
       {
@@ -27,7 +29,9 @@
           "ankaios.agent": "linaro",
           "ankaios.runtime": "systemd",
           "ankaios.restartPolicy": "ALWAYS",
-          "ankaios.runtimeConfig": "serviceName: qemu_2.service"
+          "ankaios.runtimeConfig": "serviceName: qemu_2.service",
+          "health.url": "http://192.168.10.240:8090/health/workload/qemu_2-vm",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/qemu_2-vm"
         }
       },
       {
@@ -39,7 +43,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "ALWAYS",
           "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40101\"]"
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40101\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-server-40101",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-server-40101"
         }
       },
       {
@@ -51,7 +57,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "ALWAYS",
           "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40102\"]"
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40102\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-server-40102",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-server-40102"
         }
       },
       {
@@ -63,7 +71,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "ALWAYS",
           "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40103\"]"
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40103\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-server-40103",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-server-40103"
         }
       },
       {
@@ -75,7 +85,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "NEVER",
           "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40101\", \"10\", \"60\"]"
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40101\", \"10\", \"60\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-client-40101",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-client-40101"
         }
       },
       {
@@ -87,7 +99,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "NEVER",
           "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40102\", \"10\", \"60\"]"
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40102\", \"10\", \"60\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-client-40102",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-client-40102"
         }
       },
       {
@@ -99,7 +113,9 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "NEVER",
           "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40103\", \"10\", \"60\"]"
+          "ankaios.runtimeConfig": "image: localhost/echo-client:latest\ncommandArgs: [\"http://192.168.10.240:40103\", \"10\", \"60\"]",
+          "health.url": "http://192.168.10.240:8090/health/workload/echo-client-40103",
+          "health.localUrl": "http://127.0.0.1:8090/health/workload/echo-client-40103"
         }
       }
     ],
