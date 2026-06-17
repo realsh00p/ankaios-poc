@@ -81,6 +81,7 @@ symphony/opera/**/*.webp
 # Helper scripts.
 !scripts/
 !scripts/*.sh
+!scripts/*.py
 
 # Explicit binary/secret/runtime exclusions for clarity.
 *.img

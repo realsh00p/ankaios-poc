@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "name": "ankaios-echo-stack-v-v1",
+    "name": "ankaios-echo-stack-v-v2-bad-client",
     "namespace": "default",
     "labels": {
-      "displayName": "Ankaios Echo Stack",
+      "displayName": "Ankaios Echo Stack bad client test",
       "rootResource": "ankaios-echo-stack"
     }
   },
@@ -95,9 +95,10 @@
           "ankaios.runtime": "podman",
           "ankaios.restartPolicy": "NEVER",
           "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
-          "ankaios.runtimeConfig": "image: localhost/echo-client:health-v3\ncommandOptions: [\"--network\", \"host\"]\ncommandArgs: [\"http://192.168.10.240:40102\", \"10\", \"60\", \"41102\"]",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:health-v3\ncommandOptions: [\"--network\", \"host\"]\ncommandArgs: [\"http://192.168.10.240:40999\", \"10\", \"60\", \"41102\"]",
           "health.url": "http://192.168.10.240:41102/health",
-          "health.localUrl": "http://127.0.0.1:41102/health"
+          "health.localUrl": "http://127.0.0.1:41102/health",
+          "test.invalidPort": "40999"
         }
       },
       {
@@ -115,6 +116,6 @@
         }
       }
     ],
-    "displayName": "Ankaios Echo Stack v1"
+    "displayName": "Ankaios Echo Stack bad client test"
   }
 }
