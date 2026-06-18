@@ -9,7 +9,7 @@ ConditionPathIsDirectory=/home/linaro/ota_overlay/etc/systemd/system
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/bin/systemctl daemon-reload
-ExecStart=/bin/systemctl --no-block start ank-server.service ank-agent.service
+ExecStart=/bin/systemctl --no-block start ank-server.service ank-agent.service opensovd-gateway.service
 
 [Install]
 WantedBy=multi-user.target
