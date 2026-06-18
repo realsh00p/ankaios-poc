@@ -199,15 +199,7 @@
             "isInActive": false
           }
         },
-        "stageSelector": "settle-candidate"
-      },
-      "settle-candidate": {
-        "name": "settle-candidate",
-        "provider": "providers.stage.delay",
-        "inputs": {
-          "delay": "75s"
-        },
-        "stageSelector": "validate-echo-server-40101"
+        "stageSelector": "wait-echo-server-40101"
       },
       "validate-echo-server-40101": {
         "name": "validate-echo-server-40101",
@@ -480,6 +472,135 @@
           }
         },
         "stageSelector": ""
+      },
+      "wait-echo-server-40101": {
+        "name": "wait-echo-server-40101",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:40101/health",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30
+        },
+        "stageSelector": "wait-echo-server-40102"
+      },
+      "wait-echo-server-40102": {
+        "name": "wait-echo-server-40102",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:40102/health",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30
+        },
+        "stageSelector": "wait-echo-server-40103"
+      },
+      "wait-echo-server-40103": {
+        "name": "wait-echo-server-40103",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:40103/health",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30
+        },
+        "stageSelector": "wait-echo-client-40101"
+      },
+      "wait-echo-client-40101": {
+        "name": "wait-echo-client-40101",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:41101/validate",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30,
+          "wait.body": "healthy"
+        },
+        "stageSelector": "wait-echo-client-40102"
+      },
+      "wait-echo-client-40102": {
+        "name": "wait-echo-client-40102",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:41102/validate",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30,
+          "wait.body": "unhealthy"
+        },
+        "stageSelector": "wait-echo-client-40103"
+      },
+      "wait-echo-client-40103": {
+        "name": "wait-echo-client-40103",
+        "provider": "providers.stage.http",
+        "inputs": {
+          "url": "http://127.0.0.1:8082/v1alpha2/campaigns",
+          "method": "GET",
+          "successCodes": [
+            200
+          ],
+          "wait.url": "http://192.168.10.240:41103/validate",
+          "wait.start": [
+            200
+          ],
+          "wait.success": [
+            200
+          ],
+          "wait.interval": 2,
+          "wait.count": 30,
+          "wait.body": "healthy"
+        },
+        "stageSelector": "validate-echo-server-40101"
       }
     }
   }

@@ -167,9 +167,12 @@ def wait_for_activation_done(api, activation, instance_name=None, timeout=180):
 
         details = []
         if instance_name:
-            instance = get_resource(api, f"instances/{instance_name}")
-            current_version = instance.get("spec", {}).get("solutionversion", "")
-            details.append(f"instance={current_version}")
+            _, instance = request_json("GET", f"{api.rstrip(chr(47))}/instances/{instance_name}", fail_on_http_error=False)
+            if isinstance(instance, dict) and "spec" in instance:
+                current_version = instance.get("spec", {}).get("solutionversion", "")
+                details.append(f"instance={current_version}")
+            else:
+                details.append("instance=<missing>")
         command_args = echo_client_40102_command_args()
         if command_args:
             details.append(command_args)
