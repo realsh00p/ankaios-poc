@@ -30,6 +30,16 @@ VARIANTS = {
         "solution_version": ECHO_STACK / "solution-version-bad-client.json",
         "instance": ECHO_STACK / "instance-bad-client.json",
         "solution_version_id": "ankaios-echo-stack-v-v2-bad-client",
+        "campaign_version": CAMPAIGN_DIR / "campaign-version.json",
+        "campaign_version_ref": "ankaios-echo-stack-validation:v1",
+    },
+    "v2-good": {
+        "solution_version": ECHO_STACK / "solution-version-v2-good.json",
+        "instance": ECHO_STACK / "instance-v2-good.json",
+        "solution_version_id": "ankaios-echo-stack-v-v2-good",
+        "campaign_version": CAMPAIGN_DIR / "campaign-version-v2-good.json",
+        "campaign_version_id": "ankaios-echo-stack-validation-v-v2-good",
+        "campaign_version_ref": "ankaios-echo-stack-validation:v2-good",
     },
 }
 
@@ -99,6 +109,7 @@ def seed_stack_resources(api):
 def seed_validation_campaign(api):
     post_resource(api, "campaigns/ankaios-echo-stack-validation", load_json(CAMPAIGN_DIR / "campaign.json"))
     post_resource(api, "campaignversions/ankaios-echo-stack-validation-v-v1", load_json(CAMPAIGN_DIR / "campaign-version.json"))
+    post_resource(api, "campaignversions/ankaios-echo-stack-validation-v-v2-good", load_json(CAMPAIGN_DIR / "campaign-version-v2-good.json"))
 
 
 def reconcile(api, variant_name, output=True):
@@ -178,11 +189,11 @@ def ensure_client_health_fails():
                 print(value)
 
 
-def start_validation_activation(api):
+def start_validation_activation(api, campaign_version_ref):
     activation = f"echo-stack-update-{time.strftime('%Y%m%d%H%M%S')}"
     payload = {
         "metadata": {"name": activation, "namespace": "default"},
-        "spec": {"campaignversion": "ankaios-echo-stack-validation:v1"},
+        "spec": {"campaignversion": campaign_version_ref},
     }
     print(f"Starting Symphony validation activation: {activation}")
     post_resource(api, f"activations/registry/{activation}", payload)
@@ -236,19 +247,38 @@ def run_bad_client_update(api):
     seed_stack_resources(api)
     seed_validation_campaign(api)
     print("Starting Symphony update campaign: candidate echo-client-40102 -> http://192.168.10.240:40999")
-    activation = start_validation_activation(api)
+    activation = start_validation_activation(api, VARIANTS["bad-client"]["campaign_version_ref"])
     wait_for_activation_done(api, activation)
     wait_for_recovered_client(api)
 
 
+def run_v2_good_update(api):
+    print(f"Seeding Symphony resources into {api}")
+    seed_stack_resources(api)
+    seed_validation_campaign(api)
+    print("Starting Symphony update campaign: candidate ankaios-echo-stack:v2-good")
+    activation = start_validation_activation(api, VARIANTS["v2-good"]["campaign_version_ref"])
+    wait_for_activation_done(api, activation)
+    instance = get_resource(api, "instances/ankaios-echo-stack-instance")
+    current_version = instance.get("spec", {}).get("solutionversion", "")
+    if current_version != "ankaios-echo-stack:v2-good":
+        raise SystemExit(f"v2-good campaign failed: Symphony instance is {current_version}")
+    code, payload = client_health(fail_on_http_error=False)
+    if code != 200:
+        raise SystemExit(f"v2-good campaign failed: echo-client-40102 health returned {code}: {payload}")
+    print("v2-good verified: Symphony instance is ankaios-echo-stack:v2-good and echo-client-40102 is healthy")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Deploy and validate the Symphony Ankaios echo stack")
-    parser.add_argument("variant", choices=["good", "bad-client"])
+    parser.add_argument("variant", choices=["good", "v2-good", "bad-client"])
     parser.add_argument("--api", default=os.environ.get("SYMPHONY_API", DEFAULT_API))
     args = parser.parse_args()
 
     if args.variant == "bad-client":
         run_bad_client_update(args.api)
+    elif args.variant == "v2-good":
+        run_v2_good_update(args.api)
     else:
         reconcile(args.api, args.variant)
 

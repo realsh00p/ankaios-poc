@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "name": "ankaios-echo-stack-v-v2-good",
+    "namespace": "default",
+    "labels": {
+      "displayName": "Ankaios Echo Stack v2 good",
+      "rootResource": "ankaios-echo-stack"
+    }
+  },
+  "spec": {
+    "rootResource": "ankaios-echo-stack",
+    "components": [
+      {
+        "name": "qemu_1-vm",
+        "type": "container",
+        "properties": {
+          "ankaios.agent": "linaro",
+          "ankaios.runtime": "systemd",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.runtimeConfig": "serviceName: qemu_1.service"
+        }
+      },
+      {
+        "name": "qemu_2-vm",
+        "type": "container",
+        "properties": {
+          "ankaios.agent": "linaro",
+          "ankaios.runtime": "systemd",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.runtimeConfig": "serviceName: qemu_2.service"
+        }
+      },
+      {
+        "name": "echo-server-40101",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40101\"]",
+          "health.url": "http://192.168.10.240:40101/health",
+          "health.localUrl": "http://127.0.0.1:40101/health"
+        }
+      },
+      {
+        "name": "echo-server-40102",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40102\"]",
+          "health.url": "http://192.168.10.240:40102/health",
+          "health.localUrl": "http://127.0.0.1:40102/health"
+        }
+      },
+      {
+        "name": "echo-server-40103",
+        "type": "container",
+        "properties": {
+          "container.image": "docker.io/ealen/echo-server:latest",
+          "ankaios.agent": "qemu_1",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "ALWAYS",
+          "ankaios.dependencies": "qemu_1-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: docker.io/ealen/echo-server:latest\ncommandOptions: [\"--network\", \"host\", \"-e\", \"PORT=40103\"]",
+          "health.url": "http://192.168.10.240:40103/health",
+          "health.localUrl": "http://127.0.0.1:40103/health"
+        }
+      },
+      {
+        "name": "echo-client-40101",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:health-v3",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:health-v3\ncommandOptions: [\"--network\", \"host\"]\ncommandArgs: [\"http://192.168.10.240:40101\", \"10\", \"60\", \"41101\"]",
+          "health.url": "http://192.168.10.240:41101/health",
+          "health.localUrl": "http://127.0.0.1:41101/health"
+        }
+      },
+      {
+        "name": "echo-client-40102",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:health-v3",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:health-v3\ncommandOptions: [\"--network\", \"host\"]\ncommandArgs: [\"http://192.168.10.240:40102\", \"10\", \"60\", \"41102\"]",
+          "health.url": "http://192.168.10.240:41102/health",
+          "health.localUrl": "http://127.0.0.1:41102/health"
+        }
+      },
+      {
+        "name": "echo-client-40103",
+        "type": "container",
+        "properties": {
+          "container.image": "localhost/echo-client:health-v3",
+          "ankaios.agent": "qemu_2",
+          "ankaios.runtime": "podman",
+          "ankaios.restartPolicy": "NEVER",
+          "ankaios.dependencies": "qemu_2-vm: ADD_COND_RUNNING",
+          "ankaios.runtimeConfig": "image: localhost/echo-client:health-v3\ncommandOptions: [\"--network\", \"host\"]\ncommandArgs: [\"http://192.168.10.240:40103\", \"10\", \"60\", \"41103\"]",
+          "health.url": "http://192.168.10.240:41103/health",
+          "health.localUrl": "http://127.0.0.1:41103/health"
+        }
+      }
+    ],
+    "displayName": "Ankaios Echo Stack v2 good"
+  }
+}
