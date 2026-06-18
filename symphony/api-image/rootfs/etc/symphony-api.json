@@ -238,7 +238,8 @@
             "name": "targets-manager",
             "type": "managers.symphony.targets",
             "properties": {
-              "providers.persistentstate": "k8s-state"
+              "providers.persistentstate": "k8s-state",
+              "staticTargetsDir": "/etc/symphony/targets"
             },
             "providers": {
               "k8s-state": {
@@ -431,10 +432,11 @@
                 "config": {}
               },
               "instance": {
-                "type": "providers.target.rust",
+                "type": "providers.target.sovd",
                 "config": {
-                  "libHash": "any",
-                  "libFile": "/usr/local/lib/libankaios.so"
+                  "endpoint": "http://127.0.0.1:7690/sovd/v1",
+                  "component": "ankaios",
+                  "timeout": 60
                 }
               }
             }

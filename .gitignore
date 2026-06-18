@@ -48,6 +48,8 @@ ota_overlay/etc/rollback-workload/history/
 !symphony/api-image/rootfs/
 !symphony/api-image/rootfs/etc/
 !symphony/api-image/rootfs/etc/symphony-api.json
+!symphony/api-image/rootfs/etc/symphony/
+!symphony/api-image/rootfs/etc/symphony/**
 symphony/api-image/rootfs/lib/
 symphony/api-image/rootfs/usr/
 symphony/api-image/rootfs/bin/

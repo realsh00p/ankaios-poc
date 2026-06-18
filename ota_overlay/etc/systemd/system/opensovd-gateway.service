@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenSOVD gateway for Ankaios
+After=network-online.target ank-server.service
+Wants=network-online.target
+Requires=ank-server.service
+
+[Service]
+Type=notify
+ExecStart=/home/linaro/ota_overlay/usr/local/bin/opensovd-gateway --url http://0.0.0.0:7690/sovd --ankaios --ankaios-cli /usr/local/bin/ank --cors-origin "*" --cors-method "*" --cors-header "*"
+Restart=on-failure
+RestartSec=2s
+User=linaro
+Group=linaro
+
+[Install]
+WantedBy=multi-user.target

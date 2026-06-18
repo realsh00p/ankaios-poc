@@ -1,90 +1,154 @@
 apiVersion: v1
 workloads:
-  qemu_2-vm:
-    agent: linaro
-    restartPolicy: ALWAYS
-    runtime: systemd
-    runtimeConfig: 'serviceName: qemu_2.service'
-  echo-server-40102:
-    agent: qemu_1
-    restartPolicy: ALWAYS
-    dependencies:
-      qemu_1-vm: ADD_COND_RUNNING
-    runtime: podman
-    runtimeConfig: |-
-      image: docker.io/ealen/echo-server:latest
-      commandOptions: ["--network", "host", "-e", "PORT=40102"]
-  qemu_1-vm:
-    agent: linaro
-    restartPolicy: ALWAYS
-    runtime: systemd
-    runtimeConfig: 'serviceName: qemu_1.service'
-  echo-server-40101:
-    agent: qemu_1
-    restartPolicy: ALWAYS
-    dependencies:
-      qemu_1-vm: ADD_COND_RUNNING
-    runtime: podman
-    runtimeConfig: |-
-      image: docker.io/ealen/echo-server:latest
-      commandOptions: ["--network", "host", "-e", "PORT=40101"]
-  echo-client-40102:
-    agent: qemu_2
-    restartPolicy: NEVER
-    dependencies:
-      qemu_2-vm: ADD_COND_RUNNING
-    runtime: podman
-    runtimeConfig: |-
-      image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40102", "10", "60"]
-  echo-server-40103:
-    agent: qemu_1
-    restartPolicy: ALWAYS
-    dependencies:
-      qemu_1-vm: ADD_COND_RUNNING
-    runtime: podman
-    runtimeConfig: |-
-      image: docker.io/ealen/echo-server:latest
-      commandOptions: ["--network", "host", "-e", "PORT=40103"]
-  echo-client-40103:
-    agent: qemu_2
-    restartPolicy: NEVER
-    dependencies:
-      qemu_2-vm: ADD_COND_RUNNING
-    runtime: podman
-    runtimeConfig: |-
-      image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40103", "10", "60"]
   echo-client-40101:
     agent: qemu_2
     restartPolicy: NEVER
     dependencies:
       qemu_2-vm: ADD_COND_RUNNING
+    tags: {}
     runtime: podman
     runtimeConfig: |-
-      image: localhost/echo-client:latest
-      commandArgs: ["http://192.168.10.240:40101", "10", "60"]
-
+      image: localhost/echo-client:health-v3
+      commandOptions: ["--network", "host"]
+      commandArgs: ["http://192.168.10.240:40101", "10", "60", "41101"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  echo-client-40102:
+    agent: qemu_2
+    restartPolicy: NEVER
+    dependencies:
+      qemu_2-vm: ADD_COND_RUNNING
+    tags: {}
+    runtime: podman
+    runtimeConfig: |-
+      image: localhost/echo-client:health-v3
+      commandOptions: ["--network", "host"]
+      commandArgs: ["http://192.168.10.240:40102", "10", "60", "41102"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  echo-client-40103:
+    agent: qemu_2
+    restartPolicy: NEVER
+    dependencies:
+      qemu_2-vm: ADD_COND_RUNNING
+    tags: {}
+    runtime: podman
+    runtimeConfig: |-
+      image: localhost/echo-client:health-v3
+      commandOptions: ["--network", "host"]
+      commandArgs: ["http://192.168.10.240:40103", "10", "60", "41103"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  echo-server-40101:
+    agent: qemu_1
+    restartPolicy: ALWAYS
+    dependencies:
+      qemu_1-vm: ADD_COND_RUNNING
+    tags: {}
+    runtime: podman
+    runtimeConfig: |-
+      image: docker.io/ealen/echo-server:latest
+      commandOptions: ["--network", "host", "-e", "PORT=40101"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  echo-server-40102:
+    agent: qemu_1
+    restartPolicy: ALWAYS
+    dependencies:
+      qemu_1-vm: ADD_COND_RUNNING
+    tags: {}
+    runtime: podman
+    runtimeConfig: |-
+      image: docker.io/ealen/echo-server:latest
+      commandOptions: ["--network", "host", "-e", "PORT=40102"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  echo-server-40103:
+    agent: qemu_1
+    restartPolicy: ALWAYS
+    dependencies:
+      qemu_1-vm: ADD_COND_RUNNING
+    tags: {}
+    runtime: podman
+    runtimeConfig: |-
+      image: docker.io/ealen/echo-server:latest
+      commandOptions: ["--network", "host", "-e", "PORT=40103"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  qemu_1-vm:
+    agent: linaro
+    restartPolicy: ALWAYS
+    dependencies: {}
+    tags: {}
+    runtime: systemd
+    runtimeConfig: 'serviceName: qemu_1.service'
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+  qemu_2-vm:
+    agent: linaro
+    restartPolicy: ALWAYS
+    dependencies: {}
+    tags: {}
+    runtime: systemd
+    runtimeConfig: 'serviceName: qemu_2.service'
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
   symphony-api:
     agent: linaro
     restartPolicy: ALWAYS
+    dependencies: {}
+    tags: {}
     runtime: podman
     runtimeConfig: |-
       image: localhost/symphony-api:latest
       commandOptions: ["--network", "host"]
     controlInterfaceAccess:
       allowRules:
-        - type: StateRule
-          operation: ReadWrite
-          filterMasks:
-            - "desiredState"
-            - "workloadStates"
-            - "agents"
-
+      - type: StateRule
+        operation: ReadWrite
+        filterMasks:
+        - desiredState
+        - workloadStates
+        - agents
+      denyRules: []
+    configs: {}
+    files: []
   symphony-opera:
     agent: linaro
     restartPolicy: ALWAYS
+    dependencies: {}
+    tags: {}
     runtime: podman
     runtimeConfig: |-
       image: localhost/symphony-opera:solutions-fix
       commandOptions: ["--network", "host", "-e", "HOSTNAME=0.0.0.0"]
+    controlInterfaceAccess:
+      allowRules: []
+      denyRules: []
+    configs: {}
+    files: []
+configs: {}
