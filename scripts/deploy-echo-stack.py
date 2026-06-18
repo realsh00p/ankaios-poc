@@ -13,35 +13,7 @@ from http.client import RemoteDisconnected
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-ROOT = Path(__file__).resolve().parents[1]
-ECHO_STACK = ROOT / "symphony" / "ankaios" / "echo-stack"
-TARGET_FILE = ROOT / "symphony" / "ankaios" / "target" / "linaro-ankaios.json"
-CAMPAIGN_DIR = ROOT / "symphony" / "campaigns" / "echo-stack-validation"
 DEFAULT_API = "http://127.0.0.1:8082/v1alpha2"
-ECHO_CLIENT_40102_HEALTH = "http://192.168.10.240:41102/health"
-
-VARIANTS = {
-    "good": {
-        "solution_version": ECHO_STACK / "solution-version.json",
-        "instance": ECHO_STACK / "instance.json",
-        "solution_version_id": "ankaios-echo-stack-v-v1",
-    },
-    "bad-client": {
-        "solution_version": ECHO_STACK / "solution-version-bad-client.json",
-        "instance": ECHO_STACK / "instance-bad-client.json",
-        "solution_version_id": "ankaios-echo-stack-v-v2-bad-client",
-        "campaign_version": CAMPAIGN_DIR / "campaign-version.json",
-        "campaign_version_ref": "ankaios-echo-stack-validation:v1",
-    },
-    "v2-good": {
-        "solution_version": ECHO_STACK / "solution-version-v2-good.json",
-        "instance": ECHO_STACK / "instance-v2-good.json",
-        "solution_version_id": "ankaios-echo-stack-v-v2-good",
-        "campaign_version": CAMPAIGN_DIR / "campaign-version-v2-good.json",
-        "campaign_version_id": "ankaios-echo-stack-validation-v-v2-good",
-        "campaign_version_ref": "ankaios-echo-stack-validation:v2-good",
-    },
-}
 
 
 def load_json(path):
@@ -83,134 +55,130 @@ def get_resource(api, path):
     return result
 
 
-def deployment_spec(solution_version, instance, target):
-    target_name = target["metadata"]["name"]
-    components = solution_version["spec"]["components"]
-    return {
-        "solutionversionName": solution_version["metadata"]["name"],
-        "solutionversion": solution_version,
-        "instance": instance,
-        "targets": {target_name: target},
-        "assignments": {target_name: "".join("{" + c["name"] + "}" for c in components)},
-        "objectNamespace": instance.get("metadata", {}).get("namespace", "default"),
-        "generation": instance.get("metadata", {}).get("etag", ""),
-        "isDryRun": False,
-        "isInActive": False,
-    }
+def walk(value):
+    yield value
+    if isinstance(value, dict):
+        for child in value.values():
+            yield from walk(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from walk(child)
 
 
-def seed_stack_resources(api):
-    target = load_json(TARGET_FILE)
-    post_resource(api, f"targets/registry/{target['metadata']['name']}", target)
-    for variant in VARIANTS.values():
-        post_resource(api, f"solutionversions/{variant['solution_version_id']}", load_json(variant["solution_version"]))
+def embedded_solution_versions(campaign_version):
+    versions = {}
+    for value in walk(campaign_version):
+        if not isinstance(value, dict):
+            continue
+        solution_version = value.get("solutionversion")
+        if not isinstance(solution_version, dict):
+            continue
+        name = solution_version.get("metadata", {}).get("name")
+        if name:
+            versions[name] = solution_version
+    return versions
 
 
-def seed_validation_campaign(api):
-    post_resource(api, "campaigns/ankaios-echo-stack-validation", load_json(CAMPAIGN_DIR / "campaign.json"))
-    post_resource(api, "campaignversions/ankaios-echo-stack-validation-v-v1", load_json(CAMPAIGN_DIR / "campaign-version.json"))
-    post_resource(api, "campaignversions/ankaios-echo-stack-validation-v-v2-good", load_json(CAMPAIGN_DIR / "campaign-version-v2-good.json"))
+def campaign_resource(campaign_version, campaign_file):
+    sibling = campaign_file.with_name("campaign.json")
+    if sibling.exists():
+        return load_json(sibling)
+
+    root = campaign_version.get("spec", {}).get("rootResource")
+    if not root:
+        raise SystemExit(f"{campaign_file} has no spec.rootResource and no sibling campaign.json")
+    namespace = campaign_version.get("metadata", {}).get("namespace", "default")
+    return {"metadata": {"name": root, "namespace": namespace}, "spec": {}}
 
 
-def reconcile(api, variant_name, output=True):
-    variant = VARIANTS[variant_name]
-    target = load_json(TARGET_FILE)
-    solution_version = load_json(variant["solution_version"])
-    instance = load_json(variant["instance"])
-    namespace = instance.get("metadata", {}).get("namespace", "default")
+def campaign_version_ref(campaign_version):
+    root = campaign_version.get("spec", {}).get("rootResource")
+    name = campaign_version.get("metadata", {}).get("name")
+    if not root or not name:
+        raise SystemExit("Campaign version needs metadata.name and spec.rootResource")
 
-    post_resource(api, f"targets/registry/{target['metadata']['name']}", target)
-    post_resource(api, f"solutionversions/{variant['solution_version_id']}", solution_version)
-    post_resource(api, f"instances/{instance['metadata']['name']}", instance)
+    prefix = f"{root}-v-"
+    if not name.startswith(prefix):
+        raise SystemExit(f"Cannot derive campaign version ref: {name} does not start with {prefix}")
+    return f"{root}:{name[len(prefix):]}"
 
-    summary = post_resource(
-        api,
-        f"solutionversion/reconcile?namespace={namespace}",
-        deployment_spec(solution_version, instance, target),
+
+def candidate_instance_name(campaign_version):
+    stages = campaign_version.get("spec", {}).get("stages", {})
+    deploy = stages.get("deploy-candidate", {})
+    return (
+        deploy.get("inputs", {})
+        .get("body", {})
+        .get("metadata", {})
+        .get("name")
     )
-    if output:
-        json.dump(summary, sys.stdout, indent=2, sort_keys=True)
-        sys.stdout.write("\n")
-    if not summary or not summary.get("allAssignedDeployed"):
-        raise SystemExit(1)
-    return summary
 
 
 def run_text(command):
-    return subprocess.check_output(command, text=True, timeout=15)
-
-
-def echo_client_40102_state():
-    output = run_text(["ank", "-k", "get", "workloads"])
-    for line in output.splitlines():
-        parts = line.split()
-        if parts and parts[0] == "echo-client-40102":
-            return " ".join(parts[3:])
-    return "missing"
+    return subprocess.check_output(command, text=True, timeout=15, stderr=subprocess.DEVNULL)
 
 
 def echo_client_40102_command_args():
-    output = run_text(["ank", "-k", "get", "state"])
+    try:
+        output = run_text(["ank", "-k", "get", "state"])
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return ""
+
     show = False
     for line in output.splitlines():
         if "echo-client-40102:" in line:
             show = True
         elif show and "commandArgs:" in line:
             return line.strip()
-    return "commandArgs: <missing>"
+    return ""
 
 
-def client_health(fail_on_http_error=False):
-    return request_json("GET", ECHO_CLIENT_40102_HEALTH, timeout=20, fail_on_http_error=fail_on_http_error)
+def seed_campaign(api, campaign_file):
+    campaign_version = load_json(campaign_file)
+    campaign = campaign_resource(campaign_version, campaign_file)
+    campaign_name = campaign["metadata"]["name"]
+    campaign_version_name = campaign_version["metadata"]["name"]
+
+    post_resource(api, f"campaigns/{campaign_name}", campaign)
+    for name, solution_version in embedded_solution_versions(campaign_version).items():
+        post_resource(api, f"solutionversions/{name}", solution_version)
+    post_resource(api, f"campaignversions/{campaign_version_name}", campaign_version)
+    return campaign_version
 
 
-def wait_for_unhealthy_client(timeout=120):
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        state = echo_client_40102_state()
-        code, payload = client_health(fail_on_http_error=False)
-        reason = payload.get("reason") if isinstance(payload, dict) else None
-        endpoint = payload.get("endpoint") if isinstance(payload, dict) else None
-        print(f"echo-client-40102={state} health={code} endpoint={endpoint} reason={reason}")
-        if code == 503:
-            return
-        time.sleep(5)
-    raise SystemExit("Timed out waiting for echo-client-40102 container health to become unhealthy")
-
-
-def ensure_client_health_fails():
-    code, payload = client_health(fail_on_http_error=False)
-    if code != 503:
-        raise SystemExit(f"Expected echo-client-40102 health to return 503 before validation, got {code}")
-    print("Container health endpoint is unhealthy as expected:")
-    if isinstance(payload, dict):
-        for value in (payload.get("endpoint"), payload.get("reason")):
-            if value:
-                print(value)
-
-
-def start_validation_activation(api, campaign_version_ref):
-    activation = f"echo-stack-update-{time.strftime('%Y%m%d%H%M%S')}"
+def start_activation(api, campaign_ref, activation_name=None):
+    activation = activation_name or f"echo-stack-update-{time.strftime('%Y%m%d%H%M%S')}"
     payload = {
         "metadata": {"name": activation, "namespace": "default"},
-        "spec": {"campaignversion": campaign_version_ref},
+        "spec": {"campaignversion": campaign_ref},
     }
-    print(f"Starting Symphony validation activation: {activation}")
+    print(f"Starting Symphony activation: {activation}")
+    print(f"campaignversion={campaign_ref}")
     post_resource(api, f"activations/registry/{activation}", payload)
     return activation
 
 
-def wait_for_activation_done(api, activation, timeout=180):
+def wait_for_activation_done(api, activation, instance_name=None, timeout=180):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         status = get_resource(api, f"activations/registry/{activation}")
-        message = status.get("status", {}).get("statusMessage") or status.get("status", {}).get("properties", {}).get("statusMessage", "")
-        instance = get_resource(api, "instances/ankaios-echo-stack-instance")
-        current_version = instance.get("spec", {}).get("solutionversion", "")
-        print(f"activation={message} instance={current_version} {echo_client_40102_command_args()}")
+        state = status.get("status", {})
+        message = state.get("statusMessage") or state.get("properties", {}).get("statusMessage", "")
+
+        details = []
+        if instance_name:
+            instance = get_resource(api, f"instances/{instance_name}")
+            current_version = instance.get("spec", {}).get("solutionversion", "")
+            details.append(f"instance={current_version}")
+        command_args = echo_client_40102_command_args()
+        if command_args:
+            details.append(command_args)
+        print(f"activation={message} {' '.join(details)}".rstrip())
+
         if message == "Done":
-            history = status.get("status", {}).get("stageHistory") or status.get("status", {}).get("properties", {}).get("stageHistory")
-            print(json.dumps(history, indent=2, sort_keys=True))
+            history = state.get("stageHistory") or state.get("properties", {}).get("stageHistory")
+            if history:
+                print(json.dumps(history, indent=2, sort_keys=True))
             return
         if "Error" in message:
             print(json.dumps(status, indent=2, sort_keys=True), file=sys.stderr)
@@ -219,68 +187,24 @@ def wait_for_activation_done(api, activation, timeout=180):
     raise SystemExit(f"Timed out waiting for Symphony activation {activation}")
 
 
-def wait_for_recovered_client(api, timeout=90):
-    instance = get_resource(api, "instances/ankaios-echo-stack-instance")
-    current_version = instance.get("spec", {}).get("solutionversion", "")
-    if current_version != "ankaios-echo-stack:v1":
-        raise SystemExit(f"Rollback failed: Symphony instance is {current_version}")
-
-    print("Waiting for echo-client-40102 to become healthy after rollback")
-    deadline = time.monotonic() + timeout
-    last_payload = None
-    while time.monotonic() < deadline:
-        code, payload = client_health(fail_on_http_error=False)
-        last_payload = payload
-        if code == 200:
-            print("Rollback verified: Symphony instance is ankaios-echo-stack:v1 and echo-client-40102 is healthy again")
-            return
-        if payload:
-            for value in (payload.get("endpoint"), payload.get("reason")):
-                if value:
-                    print(value)
-        time.sleep(5)
-    raise SystemExit(f"Rollback failed: echo-client-40102 health is still failing: {json.dumps(last_payload, sort_keys=True)}")
-
-
-def run_bad_client_update(api):
-    print(f"Seeding Symphony resources into {api}")
-    seed_stack_resources(api)
-    seed_validation_campaign(api)
-    print("Starting Symphony update campaign: candidate echo-client-40102 -> http://192.168.10.240:40999")
-    activation = start_validation_activation(api, VARIANTS["bad-client"]["campaign_version_ref"])
-    wait_for_activation_done(api, activation)
-    wait_for_recovered_client(api)
-
-
-def run_v2_good_update(api):
-    print(f"Seeding Symphony resources into {api}")
-    seed_stack_resources(api)
-    seed_validation_campaign(api)
-    print("Starting Symphony update campaign: candidate ankaios-echo-stack:v2-good")
-    activation = start_validation_activation(api, VARIANTS["v2-good"]["campaign_version_ref"])
-    wait_for_activation_done(api, activation)
-    instance = get_resource(api, "instances/ankaios-echo-stack-instance")
-    current_version = instance.get("spec", {}).get("solutionversion", "")
-    if current_version != "ankaios-echo-stack:v2-good":
-        raise SystemExit(f"v2-good campaign failed: Symphony instance is {current_version}")
-    code, payload = client_health(fail_on_http_error=False)
-    if code != 200:
-        raise SystemExit(f"v2-good campaign failed: echo-client-40102 health returned {code}: {payload}")
-    print("v2-good verified: Symphony instance is ankaios-echo-stack:v2-good and echo-client-40102 is healthy")
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Deploy and validate the Symphony Ankaios echo stack")
-    parser.add_argument("variant", choices=["good", "v2-good", "bad-client"])
+    parser = argparse.ArgumentParser(description="Deploy and validate a Symphony campaign version")
+    parser.add_argument("campaign_file", type=Path, help="Path to a campaign version JSON file")
     parser.add_argument("--api", default=os.environ.get("SYMPHONY_API", DEFAULT_API))
+    parser.add_argument("--campaign-version", help="Override the campaign version ref, for example name:v2-good")
+    parser.add_argument("--activation-name")
+    parser.add_argument("--timeout", type=int, default=180)
     args = parser.parse_args()
 
-    if args.variant == "bad-client":
-        run_bad_client_update(args.api)
-    elif args.variant == "v2-good":
-        run_v2_good_update(args.api)
-    else:
-        reconcile(args.api, args.variant)
+    campaign_file = args.campaign_file
+    if not campaign_file.exists():
+        raise SystemExit(f"Campaign file does not exist: {campaign_file}")
+
+    print(f"Seeding Symphony campaign from {campaign_file}")
+    campaign_version = seed_campaign(args.api, campaign_file)
+    campaign_ref = args.campaign_version or campaign_version_ref(campaign_version)
+    activation = start_activation(args.api, campaign_ref, args.activation_name)
+    wait_for_activation_done(args.api, activation, candidate_instance_name(campaign_version), args.timeout)
 
 
 if __name__ == "__main__":
